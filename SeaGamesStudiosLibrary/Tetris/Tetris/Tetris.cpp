@@ -34,6 +34,7 @@ struct TableSquares {
 	int y;
 	int size;
 	int color;
+	bool spaceState;
 };
 
 struct TetrisBlockSquare {
@@ -47,6 +48,9 @@ struct TetrisGameBlock {
 	int color;
 	TetrisBlockSquare GameBlockSquares[4];
 	int RotateState;
+	bool DropState = true;
+	bool MoveLeftState = true;
+	bool MoveRightState = true;
 };
 
 ScreenState screenState = GAME;
@@ -91,7 +95,6 @@ void CreateNextBlockTable() {
 void CreateTetrisTable() {
 	int x = 202;
 	int y = 100;
-
 	int sqr_size = 20; //tetris kare bloklarýnýn boyutu
 	int trs_tbl_size = 5; //tetris tablosunun kenar kalýnlýðý
 	int sqr_space = 3; //tetris kare bloklarý arasýndaki boþluk
@@ -109,7 +112,7 @@ void CreateTetrisTable() {
 	for (int i = 0; i < 20; i++) {
 		sqr_x = x + sqr_space;
 		for (int j = 0; j < 10; j++) {
-			TetrisMatrix[i][j] = { sqr_x, sqr_y, sqr_size, 0x192a60 };
+			TetrisMatrix[i][j] = { sqr_x, sqr_y, sqr_size, 0x192a60 , true};
 			//FillRect(screen, sqr_x, sqr_y, sqr_size, sqr_size, 0x192a60);
 			sqr_x = sqr_x + sqr_size + sqr_space;
 		}
@@ -140,46 +143,45 @@ void DeleteTetrisBlock(TetrisGameBlock object) {
 	}
 }
 
-
 TetrisGameBlock CreateNewBlock() {
 	GameBlockType type = BlockList[0];
-	type = TETROMINO_S;
+	//type = TETROMINO_O;
 	//BlockList[0] = BlockList[1];
 	switch (type)
 	{
 	case TETROMINO_I: {
-		obj = { type, 0x008bac, { {-1,3,0xFF0000}, {-1,4,0x008bac}, {-1,6,0xFFFF00}, {-1,5,0xFFFFFF}}, 400 };
-		//obj = { type, 0x008bac, { {-1,3}, {-1,4}, {-1,6}, {-1,5}}, 0 };
+		//obj = { type, 0x008bac, { {-1,3,0xFF0000}, {-1,4,0x008bac}, {-1,6,0xFFFF00}, {-1,5,0xFFFFFF}}, 400 };
+		obj = { type, 0x008bac, { {-1,3}, {-1,4}, {-1,6}, {-1,5}}, 400 };
 		break;
 	}
 	case TETROMINO_O: {
-		obj = { type, 0x008bac, { {-2,4,0xFF0000}, {-1,4,0x008bac}, {-1,5,0xFFFF00}, {-2,5,0xFFFFFF}}, 400 };
-		//obj = { type, 0xFFFFFF , { {-2,4}, {-1,4}, {-1,5}, {-2,5} }, 0 };
+		//obj = { type, 0x008bac, { {-2,4,0xFF0000}, {-1,4,0x008bac}, {-2,5,0xFFFF00}, {-1,5,0xFFFFFF}}, 400 };
+		obj = { type, 0xFFFFFF , { {-2,4}, {-1,4}, {-2,5}, {-1,5} }, 400 };
 		break;
 	}
 	case TETROMINO_T: {
-		obj = { type, 0x008bac, { {-2,3,0xFF0000}, {-2,4,0x008bac}, {-2,5,0xFFFF00}, {-1,4,0xFFFFFF}}, 400 };
-		//obj = { type, 0xdf9300 , { {-2,3}, {-2,4}, {-2,5}, {-1,4} }, 0 }; //þuan hazýr deðil
+		//obj = { type, 0x008bac, { {-2,3,0xFF0000}, {-2,4,0x008bac}, {-2,5,0xFFFF00}, {-1,4,0xFFFFFF}}, 400 };
+		obj = { type, 0xdf9300 , { {-2,3}, {-2,4}, {-2,5}, {-1,4} }, 400 }; //þuan hazýr deðil
 		break;
 	}
 	case TETROMINO_J: {
-		obj = { type, 0x008bac, { {-2,3,0xFF0000}, {-1,3,0x008bac}, {-1,5,0xFFFF00}, {-1,4,0xFFFFFF}}, 400 };
-		//obj = { type, 0xdf9300 , { {-2,3}, {-1,3}, {-1,5}, {-1,4} }, 0 }; //þuan hazýr deðil
+		//obj = { type, 0x008bac, { {-2,3,0xFF0000}, {-1,3,0x008bac}, {-1,5,0xFFFF00}, {-1,4,0xFFFFFF}}, 400 };
+		obj = { type, 0xdf9300 , { {-2,3}, {-1,3}, {-1,5}, {-1,4} }, 400 }; //þuan hazýr deðil
 		break;
 	}
 	case TETROMINO_L: {
-		 obj = { type, 0x008bac, { {-1,3,0xFF0000}, {-1,4,0x008bac}, {-2,5,0xFFFF00}, {-1,5,0xFFFFFF}}, 400 };
-		//obj = { type, 0x0000FF , { {-1,3}, {-1,4}, {-1,5}, {-2,5} }, 0 }; //þuan hazýr deðil
+		//obj = { type, 0x008bac, { {-1,3,0xFF0000}, {-1,4,0x008bac}, {-2,5,0xFFFF00}, {-1,5,0xFFFFFF}}, 400 };
+		obj = { type, 0x0000FF , { {-1,3}, {-1,4}, {-2,5}, {-1,5} }, 400 }; //þuan hazýr deðil
 		break;
 	}
 	case TETROMINO_S: {
-		obj = { type, 0x008bac, { {-1,3,0xFF0000}, {-2,4,0x008bac}, {-2,5,0xFFFF00}, {-1,4,0xFFFFFF}}, 400 };
-		//obj = { type, 0x0000FF , {  {-1,3 }, {-2,4}, {-2,5},{-1,4} }, 0 }; //þuan hazýr deðil
+		//obj = { type, 0x008bac, { {-1,3,0xFF0000}, {-2,4,0x008bac}, {-2,5,0xFFFF00}, {-1,4,0xFFFFFF}}, 400 };
+		obj = { type, 0x0000FF , {  {-1,3 }, {-2,4}, {-2,5},{-1,4} }, 400 }; //þuan hazýr deðil
 		break;
 	}
 	case TETROMINO_Z: {
-		obj = { type, 0x008bac, { {-2,3,0xFF0000}, {-2,4,0x008bac}, {-1,5,0xFFFF00}, {-1,4,0xFFFFFF}}, 400 };
-		//obj = { type, 0x0000FF , { {-2,3}, {-2,4}, {-1,4}, {-1,5} }, 0 }; //þuan hazýr deðil
+		//obj = { type, 0x008bac, { {-2,3,0xFF0000}, {-2,4,0x008bac}, {-1,5,0xFFFF00}, {-1,4,0xFFFFFF}}, 400 };
+		obj = { type, 0x0000FF , { {-2,3}, {-2,4}, {-1,5}, {-1,4} }, 400 }; //þuan hazýr deðil
 		break;
 	}
 	default:
@@ -320,31 +322,38 @@ void BlockReturnil(int k){
 	default:
 		break;
 	}
+
+	if (obj.GameBlockSquares[0].col < 0) {
+		obj.GameBlockSquares[3].col += obj.GameBlockSquares[0].col * (-1);
+		obj.GameBlockSquares[2].col += obj.GameBlockSquares[0].col * (-1);
+		obj.GameBlockSquares[1].col += obj.GameBlockSquares[0].col * (-1);
+		obj.GameBlockSquares[0].col += obj.GameBlockSquares[0].col * (-1);
+	}
+	if (obj.GameBlockSquares[2].col > 9) {
+		obj.GameBlockSquares[0].col -= obj.GameBlockSquares[2].col - 9;
+		obj.GameBlockSquares[1].col -= obj.GameBlockSquares[2].col - 9;
+		obj.GameBlockSquares[3].col -= obj.GameBlockSquares[2].col - 9;
+		obj.GameBlockSquares[2].col -= obj.GameBlockSquares[2].col - 9;
+	}
+
 	PrintTetrisBlock(obj);
 }
 
 void BlockDrop() {
-	if (obj.GameBlockSquares[3].row < 19) {
-		
+	if (obj.DropState) {
 		DeleteTetrisBlock(obj);
 		for (int i = 0; i < 4; i++) {
 			obj.GameBlockSquares[i].row++;		
 		}
 		PrintTetrisBlock(obj);
 	}
-	else {
-		
-	}
 }
 
 void AutoBlockDrop() {
 	while (1) {		
-		if (createdobject){
+		if (createdobject) {
 			Sleep(1000);
 			BlockDrop();
-		}
-		else {
-			Sleep(100);
 		}
 	}
 }
@@ -361,9 +370,130 @@ void PrintTetrisMatrix() {
 	for (int i = 0; i < 20; i++) {
 		for (int j = 0; j < 10; j++) {
 			FillRect(screen, TetrisMatrix[i][j].x, TetrisMatrix[i][j].y, TetrisMatrix[i][j].size, TetrisMatrix[i][j].size, TetrisMatrix[i][j].color);
-				
 		}
 	}
+}
+
+void PlaceObjectOnMatrix() {
+	for (int i = 0; i < 4; i++) {
+		TetrisMatrix[obj.GameBlockSquares[i].row][obj.GameBlockSquares[i].col].spaceState = false;
+	}
+	createdobject = false;
+	BlockList[0] = BlockList[1];
+	BlockList[1] = SelectBlockType();
+	CreateNewBlock();
+}
+
+void OtherBlocksControl_Drop(){
+	for (int i = 3; i >= 0; i--) {
+		if (obj.GameBlockSquares[i].row + 1 >= 0) {
+			if (!(TetrisMatrix[obj.GameBlockSquares[i].row + 1][obj.GameBlockSquares[i].col].spaceState)) {
+				obj.DropState = false;
+				break;
+			}
+			else {
+				obj.DropState = true;
+			}
+		}
+	}
+}
+
+void OtherBlocksControl_Left_Right(int c) {
+	for (int i = 3; i >= 0; i--) { 
+		if (!(TetrisMatrix[obj.GameBlockSquares[i].row][obj.GameBlockSquares[i].col + c].spaceState)) {
+			c<0 ? obj.MoveLeftState = false : obj.MoveRightState = false;
+			break;
+		}
+		else {
+				c < 0 ? obj.MoveLeftState = true : obj.MoveRightState = true;
+		}
+		
+	}
+
+}
+
+void ControlMatrixAndTetrisBlock() {
+	while (1) {
+		while (createdobject) { //while ýn içindeki koþul gereksiz gibi
+			if (obj.GameBlockSquares[3].row == 19) {
+				obj.DropState = false;
+				Sleep(600);
+				PlaceObjectOnMatrix();
+			}
+			if (obj.GameBlockSquares[0].col == 0) {
+				obj.MoveLeftState = false;
+			}
+			else {
+				obj.MoveLeftState = true;
+			}
+			if (obj.GameBlockSquares[2].col == 9) {
+				obj.MoveRightState = false;
+			}
+			else {
+				obj.MoveRightState = true;
+			}
+
+			OtherBlocksControl_Drop();
+			if (!obj.DropState) {
+				Sleep(600);
+				OtherBlocksControl_Drop();
+				if (!obj.DropState) 
+					PlaceObjectOnMatrix();
+			}
+
+			if (obj.MoveLeftState) {
+				OtherBlocksControl_Left_Right(-1); // left control
+			}
+			if (obj.MoveRightState) {
+				OtherBlocksControl_Left_Right(1); // rigt control
+			}
+			
+			
+			
+
+			
+
+
+			Sleep(50);
+			
+		}
+		Sleep(50);
+	}
+}
+
+
+void KeyPressedControl() {
+	while (1) {
+		if (keypressed == 67 && obj.DropState) { // C = 67 turn left
+			BlockReturnil(-1);
+			obj.RotateState--;
+			keypressed = 0;
+		}
+		else if (keypressed == 86 && obj.DropState) { // V = 86 (turn right)
+			obj.RotateState++;
+			BlockReturnil(1);
+			keypressed = 0;
+		}
+		else if (keypressed == 37 && obj.MoveLeftState) // left_arrow = 37 (move left)
+		{
+			BlockMove_Left_Right(-1);
+			keypressed = 0;
+		}
+		else if (keypressed == 39 && obj.MoveRightState) // right_arrow = 39 (move right)
+		{
+			BlockMove_Left_Right(1);
+			keypressed = 0;
+		}
+		else if (keypressed == 40 && obj.DropState) // down_arrow = 39 (move down)
+		{
+			BlockDrop();
+			keypressed = 0;
+		}
+		else {
+			keypressed = 0;
+		}
+		Sleep(200);
+	}	
 }
 
 void StartGame() {
@@ -374,42 +504,9 @@ void StartGame() {
 	BlockList[0] = SelectBlockType();
 	BlockList[1] = SelectBlockType();
 	CreateNewBlock();
-
 	while (1) {
 		PrintTetrisMatrix();
 		Sleep(100);
-	}
-
-}
-
-void KeyPressedControl() {
-	while (1) {
-		if (keypressed == 67) { // C = 67 turn left
-			BlockReturnil(-1);
-			obj.RotateState--;
-			keypressed = 0;
-		}
-		else if (keypressed == 86) { // V = 86 (turn right)
-			obj.RotateState++;
-			BlockReturnil(1);
-			keypressed = 0;
-		}
-		else if (keypressed == 37) // left_arrow = 37 (move left)
-		{
-			BlockMove_Left_Right(-1);
-			keypressed = 0;
-		}
-		else if (keypressed == 39) //right_arrow = 39 (move right)
-		{
-			BlockMove_Left_Right(1);
-			keypressed = 0;
-		}
-		else if (keypressed == 40) //right_arrow = 39 (move right)
-		{
-			BlockDrop();
-			keypressed = 0;
-		}
-		Sleep(300);
 	}
 }
 
@@ -433,13 +530,14 @@ void DrawThread() {
 				CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)StartGame, NULL, 0, NULL);
 				CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)AutoBlockDrop, NULL, 0, NULL);
 				CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)KeyPressedControl, NULL, 0, NULL);
+				CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)ControlMatrixAndTetrisBlock, NULL, 0, NULL);
 			}
 		}
 		default:
 			break;
 		}
 		DisplayImage(FRM1, screen);
-		Sleep(30);
+		Sleep(60);
 	}
 }
 
